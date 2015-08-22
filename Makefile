@@ -18,7 +18,8 @@ install: *.go *.cc *.h $(v8libs)
 	go install
 
 clean:
-	rm -f $(v8libs)
+	go clean
+	rm -rf v8/out
 
 distclean: clean
 	rm -f .gclient .gclient_entries
