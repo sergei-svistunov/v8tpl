@@ -38,9 +38,6 @@ const TEMPLATE = `
 `
 
 func main() {
-	// Init V8 engine
-	v8tpl.InitV8()
-
 	// Create template object
 	tpl, err := v8tpl.NewTemplate(TEMPLATE)
 	if err != nil {
