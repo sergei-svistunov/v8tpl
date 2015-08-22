@@ -18,6 +18,7 @@ import "C"
 import (
 	"encoding/json"
 	"errors"
+	"runtime"
 )
 
 func init() {
@@ -38,9 +39,15 @@ func NewTemplate(source string) (*Template, error) {
 		return nil, errors.New(C.GoString(lastError))
 	}
 
-	return &Template{
+	template := &Template{
 		cTemplate: cTpl,
-	}, nil
+	}
+
+	runtime.SetFinalizer(template, func(t *Template) {
+		C.destroy_template(t.cTemplate)
+	})
+
+	return template, nil
 }
 
 // Eval evaluate JS template and return string or error if something went wrong.

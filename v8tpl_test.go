@@ -1,6 +1,7 @@
 package v8tpl
 
 import (
+	"sync"
 	"testing"
 )
 
@@ -58,4 +59,49 @@ func BenchmarkTemplate(b *testing.B) {
 			b.Error(err)
 		}
 	}
+}
+
+func BenchmarkTemplateParallel(b *testing.B) {
+	tpl1, err := NewTemplate(TEMPLATE)
+	if err != nil {
+		b.Error(err)
+	}
+
+	tpl2, err := NewTemplate(TEMPLATE)
+	if err != nil {
+		b.Error(err)
+	}
+
+	data := map[string]string{
+		"name": "world",
+	}
+
+	b.ResetTimer()
+
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+
+		for i := 0; i < b.N; i++ {
+			_, err := tpl1.Eval(data)
+			if err != nil {
+				b.Error(err)
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		for i := 0; i < b.N; i++ {
+			_, err := tpl2.Eval(data)
+			if err != nil {
+				b.Error(err)
+			}
+		}
+	}()
+
+	wg.Wait()
 }

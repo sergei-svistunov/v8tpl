@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <iostream>
-
 #include "v8.h"
 #include "libplatform/libplatform.h"
 
@@ -27,11 +25,11 @@ public:
 };
 
 struct template_s {
+	Isolate* isolate;
 	Persistent<Context> context;
 	char* last_error;
 };
 
-Isolate* isolate;
 ArrayBufferAllocator allocator;
 
 extern "C" {
@@ -42,27 +40,27 @@ void init_v8() {
 	Platform* platform = platform::CreateDefaultPlatform();
 	V8::InitializePlatform(platform);
 	V8::Initialize();
-
-	Isolate::CreateParams create_params;
-	create_params.array_buffer_allocator = &allocator;
-
-	isolate = Isolate::New(create_params);
 }
 
 template_s* new_template(char* tpl_source) {
 	template_s* tpl = new (template_s);
+
+	Isolate::CreateParams create_params;
+	create_params.array_buffer_allocator = &allocator;
+	tpl->isolate = Isolate::New(create_params);
+
 	tpl->last_error = nullptr;
 
-	Locker locker(isolate);
-	Isolate::Scope isolate_scope(isolate);
-	HandleScope handle_scope(isolate);
-	Local<Context> context = Context::New(isolate);
+	Locker locker(tpl->isolate);
+	Isolate::Scope isolate_scope(tpl->isolate);
+	HandleScope handle_scope(tpl->isolate);
+	Local<Context> context = Context::New(tpl->isolate);
 
 	Context::Scope context_scope(context);
 
 	TryCatch try_catch;
 
-	Local<String> source = String::NewFromUtf8(isolate, tpl_source, NewStringType::kNormal).ToLocalChecked();
+	Local<String> source = String::NewFromUtf8(tpl->isolate, tpl_source, NewStringType::kNormal).ToLocalChecked();
 
 	Local<Script> script;
 	if (!Script::Compile(context, source).ToLocal(&script)) {
@@ -78,19 +76,19 @@ template_s* new_template(char* tpl_source) {
 		return tpl;
 	}
 
-	tpl->context.Reset(isolate, context);
+	tpl->context.Reset(tpl->isolate, context);
 
 	return tpl;
 }
 
 char* eval_template(template_s* tpl, char* data) {
-	Locker locker(isolate);
-	Isolate::Scope isolate_scope(isolate);
-	HandleScope handle_scope(isolate);
-	Local<Context> context = tpl->context.Get(isolate);
+	Locker locker(tpl->isolate);
+	Isolate::Scope isolate_scope(tpl->isolate);
+	HandleScope handle_scope(tpl->isolate);
+	Local<Context> context = tpl->context.Get(tpl->isolate);
 	Context::Scope context_scope(context);
 
-	Local<String> source = String::NewFromUtf8(isolate, data, NewStringType::kNormal).ToLocalChecked();
+	Local<String> source = String::NewFromUtf8(tpl->isolate, data, NewStringType::kNormal).ToLocalChecked();
 	Local<Script> script = Script::Compile(context, source).ToLocalChecked();
 	Local<Value> result = script->Run(context).ToLocalChecked();
 
@@ -101,6 +99,13 @@ char* eval_template(template_s* tpl, char* data) {
 
 char* get_template_err(template_s* tpl) {
 	return tpl->last_error;
+}
+
+void destroy_template(template_s* tpl) {
+	tpl->isolate->Dispose();
+
+	if (tpl->last_error)
+		free(tpl->last_error);
 }
 
 }
