@@ -1,3 +1,11 @@
+/*
+Package v8tpl enables to evaluate JavaScript templates in Go.
+
+JavaScript template must implement function `template(data)` that will be called. Simple template:
+	var template = function(data) {
+		return "Hello " + data.name;
+	}
+*/
 package v8tpl
 
 /*
@@ -12,14 +20,17 @@ import (
 	"errors"
 )
 
+// InitV8 initialize V8 engine. It must be called before first template creation.
 func InitV8() {
 	C.init_v8()
 }
 
+// Template is a class for evaluating JS templates.
 type Template struct {
 	cTemplate *C.tpl
 }
 
+// NewTemplate is a constructor.
 func NewTemplate(source string) (*Template, error) {
 	cTpl := C.new_template(C.CString(source))
 	lastError := C.get_template_err(cTpl)
@@ -33,6 +44,7 @@ func NewTemplate(source string) (*Template, error) {
 	}, nil
 }
 
+// Eval evaluate JS template and return string or error if something went wrong.
 func (t *Template) Eval(v interface{}) (string, error) {
 	data, err := json.Marshal(v)
 	if err != nil {
