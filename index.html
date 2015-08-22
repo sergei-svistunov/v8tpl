@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>V8tpl by sergei-svistunov</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">V8tpl</h1>
+      <h2 class="project-tagline">Library to execution of JavaScript templates in Go using V8 engine</h2>
+      <a href="https://github.com/sergei-svistunov/v8tpl" class="btn">View on GitHub</a>
+      <a href="https://github.com/sergei-svistunov/v8tpl/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/sergei-svistunov/v8tpl/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="v8tpl" class="anchor" href="#v8tpl" aria-hidden="true"><span class="octicon octicon-link"></span></a>v8tpl</h1>
+
+<h2>
+<a id="description" class="anchor" href="#description" aria-hidden="true"><span class="octicon octicon-link"></span></a>Description</h2>
+
+<p>Using the library you can execute JavaScript templates in Go by V8 engine.</p>
+
+<h2>
+<a id="how-to-install" class="anchor" href="#how-to-install" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to install</h2>
+
+<p>Download source:</p>
+
+<div class="highlight highlight-bash"><pre>go get -d github.com/sergei-svistunov/v8tpl/</pre></div>
+
+<p>Go to source directory:</p>
+
+<div class="highlight highlight-bash"><pre><span class="pl-c1">cd</span> <span class="pl-smi">$GOPATH</span>/src/github.com/sergei-svistunov/v8tpl</pre></div>
+
+<p>Install depot_tools if you haven't it (<a href="https://www.chromium.org/developers/how-tos/install-depot-tools">https://www.chromium.org/developers/how-tos/install-depot-tools</a>):</p>
+
+<div class="highlight highlight-bash"><pre>git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+<span class="pl-k">export</span> PATH=<span class="pl-s"><span class="pl-pds">`</span><span class="pl-c1">pwd</span><span class="pl-pds">`</span></span>/depot_tools:<span class="pl-s"><span class="pl-pds">"</span><span class="pl-smi">$PATH</span><span class="pl-pds">"</span></span></pre></div>
+
+<p>Build and install the library:</p>
+
+<div class="highlight highlight-bash"><pre>make -j4 install</pre></div>
+
+<h2>
+<a id="how-to-use" class="anchor" href="#how-to-use" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to use</h2>
+
+<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+
+<span class="pl-k">import</span> (
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/sergei-svistunov/v8tpl<span class="pl-pds">"</span></span>
+)
+
+<span class="pl-c">// The JS template's source must contain function `template(data)` that will be called to process data</span>
+<span class="pl-k">const</span> <span class="pl-v">TEMPLATE</span> = <span class="pl-s"><span class="pl-pds">`</span></span>
+<span class="pl-s">    var template = function(data) {</span>
+<span class="pl-s">        return "Hello " + data.name;</span>
+<span class="pl-s">    }</span>
+<span class="pl-s"><span class="pl-pds">`</span></span>
+
+<span class="pl-k">func</span> <span class="pl-en">main</span>() {
+    <span class="pl-c">// Create template object</span>
+    <span class="pl-smi">tpl</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> v8tpl.<span class="pl-c1">NewTemplate</span>(TEMPLATE)
+    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+        <span class="pl-c1">panic</span>(err)
+    }
+
+    <span class="pl-c">// Prepare data</span>
+    <span class="pl-smi">data</span> <span class="pl-k">:=</span> <span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{
+        <span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>world<span class="pl-pds">"</span></span>,
+    }
+
+    <span class="pl-c">// Process it</span>
+    <span class="pl-smi">res</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> tpl.<span class="pl-c1">Eval</span>(data)
+    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+        <span class="pl-c1">panic</span>(err)
+    }
+
+    <span class="pl-c1">println</span>(res)
+}</pre></div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/sergei-svistunov/v8tpl">V8tpl</a> is maintained by <a href="https://github.com/sergei-svistunov">sergei-svistunov</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
