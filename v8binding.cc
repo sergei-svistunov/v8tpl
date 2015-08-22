@@ -53,6 +53,7 @@ template_s* new_template(char* tpl_source) {
 	template_s* tpl = new (template_s);
 	tpl->last_error = nullptr;
 
+	Locker locker(isolate);
 	Isolate::Scope isolate_scope(isolate);
 	HandleScope handle_scope(isolate);
 	Local<Context> context = Context::New(isolate);
@@ -83,6 +84,7 @@ template_s* new_template(char* tpl_source) {
 }
 
 char* eval_template(template_s* tpl, char* data) {
+	Locker locker(isolate);
 	Isolate::Scope isolate_scope(isolate);
 	HandleScope handle_scope(isolate);
 	Local<Context> context = tpl->context.Get(isolate);

@@ -20,8 +20,7 @@ import (
 	"errors"
 )
 
-// InitV8 initialize V8 engine. It must be called before first template creation.
-func InitV8() {
+func init() {
 	C.init_v8()
 }
 

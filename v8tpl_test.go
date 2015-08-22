@@ -11,8 +11,6 @@ const TEMPLATE = `
 `
 
 func TestTemplate(t *testing.T) {
-	InitV8()
-
 	tpl, err := NewTemplate(TEMPLATE)
 	if err != nil {
 		t.Fatal(err)

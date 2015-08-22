@@ -11,8 +11,6 @@ func ExampleTemplate_Eval() {
 			return "Hello " + data.name;
 		}
 	`
-	// Init V8 engine
-	v8tpl.InitV8()
 
 	// Create template object
 	tpl, err := v8tpl.NewTemplate(templateSource)
