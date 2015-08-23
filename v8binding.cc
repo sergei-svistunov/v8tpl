@@ -43,7 +43,7 @@ void init_v8() {
 }
 
 template_s* new_template(char* tpl_source) {
-	template_s* tpl = new (template_s);
+	template_s* tpl = new template_s;
 
 	Isolate::CreateParams create_params;
 	create_params.array_buffer_allocator = &allocator;
@@ -106,6 +106,8 @@ void destroy_template(template_s* tpl) {
 
 	if (tpl->last_error)
 		free(tpl->last_error);
+
+	delete tpl;
 }
 
 }
