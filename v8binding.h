@@ -5,10 +5,10 @@ extern "C" {
 typedef struct template_s tpl;
 
 void init_v8();
-tpl* new_template(char*);
-char* eval_template(tpl*, char*);
-char* get_template_err(tpl*);
-void destroy_template(tpl*);
+tpl *new_template(char *);
+char *eval_template(tpl *, char *);
+char *get_template_err(tpl *);
+void destroy_template(tpl *);
 
 #ifdef __cplusplus
 } // extern "C"

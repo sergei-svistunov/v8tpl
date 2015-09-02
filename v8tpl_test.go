@@ -84,7 +84,7 @@ func BenchmarkTemplateParallel(b *testing.B) {
 	go func() {
 		defer wg.Done()
 
-		for i := 0; i < b.N; i++ {
+		for i := 0; i < b.N/2; i++ {
 			_, err := tpl1.Eval(data)
 			if err != nil {
 				b.Error(err)
@@ -95,7 +95,7 @@ func BenchmarkTemplateParallel(b *testing.B) {
 	go func() {
 		defer wg.Done()
 
-		for i := 0; i < b.N; i++ {
+		for i := 0; i < b.N/2; i++ {
 			_, err := tpl2.Eval(data)
 			if err != nil {
 				b.Error(err)

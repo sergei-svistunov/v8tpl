@@ -9,16 +9,18 @@ JavaScript template must implement function `template(data)` that will be called
 package v8tpl
 
 /*
-#cgo CFLAGS: -I./v8/include -I./v8/
-#cgo CXXFLAGS: -std=c++11 -I./v8/include -I./v8/
-#cgo LDFLAGS: -Wl,--start-group ./v8/out/native/obj.target/tools/gyp/libv8_libbase.a ./v8/out/native/obj.target/tools/gyp/libv8_base.a ./v8/out/native/obj.target/tools/gyp/libv8_libplatform.a ./v8/out/native/obj.target/tools/gyp/libv8_nosnapshot.a -Wl,--end-group -lrt -ldl
+#cgo CFLAGS: -I${SRCDIR}/v8/include -I${SRCDIR}/v8/
+#cgo CXXFLAGS: -std=c++11 -I${SRCDIR}/v8/include -I${SRCDIR}/v8/
+#cgo LDFLAGS: -Wl,--start-group ${SRCDIR}/v8/out/native/obj.target/tools/gyp/libv8_libbase.a ${SRCDIR}/v8/out/native/obj.target/tools/gyp/libv8_base.a ${SRCDIR}/v8/out/native/obj.target/tools/gyp/libv8_libplatform.a ${SRCDIR}/v8/out/native/obj.target/tools/gyp/libv8_nosnapshot.a -Wl,--end-group -lrt -ldl
 #include "v8binding.h"
+#include "stdlib.h"
 */
 import "C"
 import (
 	"encoding/json"
 	"errors"
 	"runtime"
+	"unsafe"
 )
 
 func init() {
@@ -57,5 +59,9 @@ func (t *Template) Eval(v interface{}) (string, error) {
 		return "", err
 	}
 
-	return C.GoString(C.eval_template(t.cTemplate, C.CString("template("+string(data)+");"))), nil
+	cStr := C.eval_template(t.cTemplate, C.CString("template("+string(data)+");"))
+	res := C.GoString(cStr)
+	C.free(unsafe.Pointer(cStr))
+
+	return res, nil
 }

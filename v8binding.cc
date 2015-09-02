@@ -8,26 +8,26 @@
 
 using namespace v8;
 
-class ArrayBufferAllocator: public ArrayBuffer::Allocator {
+class ArrayBufferAllocator : public ArrayBuffer::Allocator {
 public:
-	virtual void* Allocate(size_t length) {
-		void* data = AllocateUninitialized(length);
-		return data == NULL ? data : memset(data, 0, length);
-	}
+    virtual void *Allocate(size_t length) {
+        void *data = AllocateUninitialized(length);
+        return data == NULL ? data : memset(data, 0, length);
+    }
 
-	virtual void* AllocateUninitialized(size_t length) {
-		return malloc(length);
-	}
+    virtual void *AllocateUninitialized(size_t length) {
+        return malloc(length);
+    }
 
-	virtual void Free(void* data, size_t) {
-		free(data);
-	}
+    virtual void Free(void *data, size_t) {
+        free(data);
+    }
 };
 
 struct template_s {
-	Isolate* isolate;
-	Persistent<Context> context;
-	char* last_error;
+    Isolate *isolate;
+    Persistent<Context> context;
+    char *last_error;
 };
 
 ArrayBufferAllocator allocator;
@@ -35,79 +35,90 @@ ArrayBufferAllocator allocator;
 extern "C" {
 #include "_cgo_export.h"
 
+void _set_template_err(template_s *tpl, const char *err) {
+    if (tpl->last_error) {
+        free(tpl->last_error);
+    }
+
+    tpl->last_error = strdup(err);
+}
+
 void init_v8() {
-	V8::InitializeICU();
-	Platform* platform = platform::CreateDefaultPlatform();
-	V8::InitializePlatform(platform);
-	V8::Initialize();
+    V8::InitializeICU();
+    Platform *platform = platform::CreateDefaultPlatform();
+    V8::InitializePlatform(platform);
+    V8::Initialize();
 }
 
-template_s* new_template(char* tpl_source) {
-	template_s* tpl = new template_s;
+template_s *new_template(char *tpl_source) {
+    template_s *tpl = new template_s;
 
-	Isolate::CreateParams create_params;
-	create_params.array_buffer_allocator = &allocator;
-	tpl->isolate = Isolate::New(create_params);
+    Isolate::CreateParams create_params;
+    create_params.array_buffer_allocator = &allocator;
+    tpl->isolate = Isolate::New(create_params);
 
-	tpl->last_error = nullptr;
+    tpl->last_error = nullptr;
 
-	Locker locker(tpl->isolate);
-	Isolate::Scope isolate_scope(tpl->isolate);
-	HandleScope handle_scope(tpl->isolate);
-	Local<Context> context = Context::New(tpl->isolate);
+    Locker locker(tpl->isolate);
+    Isolate::Scope isolate_scope(tpl->isolate);
+    HandleScope handle_scope(tpl->isolate);
+    Local<Context> context = Context::New(tpl->isolate);
 
-	Context::Scope context_scope(context);
+    Context::Scope context_scope(context);
 
-	TryCatch try_catch;
+    TryCatch try_catch;
 
-	Local<String> source = String::NewFromUtf8(tpl->isolate, tpl_source, NewStringType::kNormal).ToLocalChecked();
+    Local<String> source = String::NewFromUtf8(tpl->isolate, tpl_source, NewStringType::kNormal).ToLocalChecked();
 
-	Local<Script> script;
-	if (!Script::Compile(context, source).ToLocal(&script)) {
-		String::Utf8Value exception(try_catch.Exception());
-		tpl->last_error = strdup(*exception);
-		return tpl;
-	}
+    free(tpl_source);
 
-	Local<Value> result;
-	if (!script->Run(context).ToLocal(&result)) {
-		String::Utf8Value exception(try_catch.Exception());
-		tpl->last_error = strdup(*exception);
-		return tpl;
-	}
+    Local<Script> script;
+    if (!Script::Compile(context, source).ToLocal(&script)) {
+        String::Utf8Value exception(try_catch.Exception());
+        _set_template_err(tpl, *exception);
+        return tpl;
+    }
 
-	tpl->context.Reset(tpl->isolate, context);
+    Local<Value> result;
+    if (!script->Run(context).ToLocal(&result)) {
+        String::Utf8Value exception(try_catch.Exception());
+        _set_template_err(tpl, *exception);
+        return tpl;
+    }
 
-	return tpl;
+    tpl->context.Reset(tpl->isolate, context);
+
+    return tpl;
 }
 
-char* eval_template(template_s* tpl, char* data) {
-	Locker locker(tpl->isolate);
-	Isolate::Scope isolate_scope(tpl->isolate);
-	HandleScope handle_scope(tpl->isolate);
-	Local<Context> context = tpl->context.Get(tpl->isolate);
-	Context::Scope context_scope(context);
+char *eval_template(template_s *tpl, char *data) {
+    Locker locker(tpl->isolate);
+    Isolate::Scope isolate_scope(tpl->isolate);
+    HandleScope handle_scope(tpl->isolate);
+    Local<Context> context = tpl->context.Get(tpl->isolate);
+    Context::Scope context_scope(context);
 
-	Local<String> source = String::NewFromUtf8(tpl->isolate, data, NewStringType::kNormal).ToLocalChecked();
-	Local<Script> script = Script::Compile(context, source).ToLocalChecked();
-	Local<Value> result = script->Run(context).ToLocalChecked();
+    Local<String> source = String::NewFromUtf8(tpl->isolate, data, NewStringType::kNormal).ToLocalChecked();
+    free(data);
+    Local<Script> script = Script::Compile(context, source).ToLocalChecked();
+    Local<Value> result = script->Run(context).ToLocalChecked();
 
-	String::Utf8Value utf8(result);
+    String::Utf8Value utf8(result);
 
-	return strdup(*utf8);
+    return strdup(*utf8);
 }
 
-char* get_template_err(template_s* tpl) {
-	return tpl->last_error;
+char *get_template_err(template_s *tpl) {
+    return tpl->last_error;
 }
 
-void destroy_template(template_s* tpl) {
-	tpl->isolate->Dispose();
+void destroy_template(template_s *tpl) {
+    tpl->isolate->Dispose();
 
-	if (tpl->last_error)
-		free(tpl->last_error);
+    if (tpl->last_error)
+        free(tpl->last_error);
 
-	delete tpl;
+    delete tpl;
 }
 
 }
