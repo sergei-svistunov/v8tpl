@@ -1,6 +1,6 @@
-version?=4.6.80
+version?=6.1.313
 
-v8libs=v8/out/native/obj.target/tools/gyp/libv8_libbase.a v8/out/native/obj.target/tools/gyp/libv8_base.a v8/out/native/obj.target/tools/gyp/libv8_libplatform.a v8/out/native/obj.target/tools/gyp/libv8_nosnapshot.a
+v8libs=v8/out/native/obj.target/src/libv8_libbase.a v8/out/native/obj.target/src/libv8_base.a v8/out/native/obj.target/src/libv8_libplatform.a v8/out/native/obj.target/src/libv8_nosnapshot.a
 
 all: $(v8libs)
 
@@ -9,7 +9,7 @@ v8:
 	cd v8 && git checkout $(version) && gclient sync
 
 $(v8libs): v8
-	$(MAKE) -C v8/ i18nsupport=off native
+	export CPPFLAGS="-fPIC" CCFLAGS="-fPIC" && $(MAKE) -C v8/ i18nsupport=off snapshot=off native
 
 test: $(v8libs)
 	go test -v ./...

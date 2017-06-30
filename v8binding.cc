@@ -8,29 +8,11 @@
 
 using namespace v8;
 
-class ArrayBufferAllocator : public ArrayBuffer::Allocator {
-public:
-    virtual void *Allocate(size_t length) {
-        void *data = AllocateUninitialized(length);
-        return data == NULL ? data : memset(data, 0, length);
-    }
-
-    virtual void *AllocateUninitialized(size_t length) {
-        return malloc(length);
-    }
-
-    virtual void Free(void *data, size_t) {
-        free(data);
-    }
-};
-
 struct template_s {
     Isolate *isolate;
     Persistent<Context> context;
     char *last_error;
 };
-
-ArrayBufferAllocator allocator;
 
 extern "C" {
 #include "_cgo_export.h"
@@ -44,6 +26,9 @@ void _set_template_err(template_s *tpl, const char *err) {
 }
 
 void init_v8() {
+    V8::InitializeICUDefaultLocation("./test");
+    V8::InitializeExternalStartupData("./test");
+
     V8::InitializeICU();
     Platform *platform = platform::CreateDefaultPlatform();
     V8::InitializePlatform(platform);
@@ -54,7 +39,7 @@ template_s *new_template(char *tpl_source) {
     template_s *tpl = new template_s;
 
     Isolate::CreateParams create_params;
-    create_params.array_buffer_allocator = &allocator;
+    create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
     tpl->isolate = Isolate::New(create_params);
 
     tpl->last_error = nullptr;

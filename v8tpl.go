@@ -9,9 +9,9 @@ JavaScript template must implement function `template(data)` that will be called
 package v8tpl
 
 /*
-#cgo CFLAGS: -I${SRCDIR}/v8/include -I${SRCDIR}/v8/
-#cgo CXXFLAGS: -std=c++11 -I${SRCDIR}/v8/include -I${SRCDIR}/v8/
-#cgo LDFLAGS: -Wl,--start-group ${SRCDIR}/v8/out/native/obj.target/tools/gyp/libv8_libbase.a ${SRCDIR}/v8/out/native/obj.target/tools/gyp/libv8_base.a ${SRCDIR}/v8/out/native/obj.target/tools/gyp/libv8_libplatform.a ${SRCDIR}/v8/out/native/obj.target/tools/gyp/libv8_nosnapshot.a -Wl,--end-group -lrt -ldl
+#cgo CFLAGS: -I${SRCDIR}/v8/include -I${SRCDIR}/v8
+#cgo CXXFLAGS: -pthread -std=c++0x -I${SRCDIR}/v8/include -I${SRCDIR}/v8
+#cgo LDFLAGS: -Wl,--start-group ${SRCDIR}/v8/out/native/obj.target/src/libv8_base.a ${SRCDIR}/v8/out/native/obj.target/src/libv8_nosnapshot.a ${SRCDIR}/v8/out/native/obj.target/src/libv8_libbase.a ${SRCDIR}/v8/out/native/obj.target/src/libv8_libplatform.a ${SRCDIR}/v8/out/native/obj.target/src/libv8_libsampler.a ${SRCDIR}/v8/out/native/obj.target/src/libv8_builtins_setup.a ${SRCDIR}/v8/out/native/obj.target/src/libv8_builtins_generators.a -Wl,--end-group -lrt -ldl
 #include "v8binding.h"
 #include "stdlib.h"
 */
